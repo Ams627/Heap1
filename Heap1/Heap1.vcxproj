@@ -80,6 +80,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Heap1.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>

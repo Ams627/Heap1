@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <crtdbg.h> // for _CrtMemBlockHeader
+#include "Heap1.h"
 
 #define nNoMansLandSize 4
 
@@ -17,8 +18,8 @@ typedef struct _CrtMemBlockHeader
     int                         nBlockUse;
     size_t                      nDataSize;
 #else  /* _WIN64 */
-    size_t                      nDataSize;
     int                         nBlockUse;
+    size_t                      nDataSize;
 #endif  /* _WIN64 */
     long                        lRequest;
     unsigned char               gap[nNoMansLandSize];
@@ -79,8 +80,37 @@ void heapdump(void)
 }
 
 
+// Memory block identification
+#define _FREE_BLOCK      0
+#define _NORMAL_BLOCK    1
+#define _CRT_BLOCK       2
+#define _IGNORE_BLOCK    3
+#define _CLIENT_BLOCK    4
+#define _MAX_BLOCKS      5
+
+void PrintHeapFromMemstate(_CrtMemState *memstate)
+{
+    char *blockTypes[] = { "free", "normal", "crt", "ignore", "client" };
+
+    for (int i = 0; i < _MAX_BLOCKS; i++)
+    {
+        printf("%s blocks: %d \n", blockTypes[i], memstate->lCounts[i]);
+    }
+
+    auto pHeader = memstate->pBlockHeader;
+    while (pHeader)
+    {
+        printf("filename pointer %08p, line %u block type %u, size %u\n", pHeader->szFileName, pHeader->nLine, pHeader->nBlockUse, pHeader->nDataSize);
+        printf("filename: %s", pHeader->szFileName);
+        pHeader = pHeader->pBlockHeaderNext;
+    }
+}
+
 int main()
 {
-    void *p2 = malloc(1000);
-    heapdump();
+    void *p2 = malloc(123457);
+
+    _CrtMemState memstate;
+    _CrtMemCheckpoint(&memstate);
+    PrintHeapFromMemstate(&memstate);
 }
